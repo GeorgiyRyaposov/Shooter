@@ -20,8 +20,6 @@ namespace Assets.Game.Scripts.Domain.Systems
         {
             _shooterInput = new ShooterInput();
             _shooterInput.Player.SetCallbacks(this);
-
-            EnableGameplayInput();
         }
 
         public void OnFire(InputAction.CallbackContext context)

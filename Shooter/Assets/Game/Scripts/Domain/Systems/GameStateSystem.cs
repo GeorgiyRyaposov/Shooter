@@ -66,7 +66,7 @@ namespace Assets.Game.Scripts.Domain.Systems
         }
         private void OnShowSettingsClick()
         {
-            Cursor.lockState = CursorLockMode.None;
+            HideCursor(false);
 
             _startScreenView.Hide();
             _settingsView.Show();
@@ -86,7 +86,7 @@ namespace Assets.Game.Scripts.Domain.Systems
 
             if (_gameStarted)
             {
-                Cursor.lockState = CursorLockMode.Locked;
+                HideCursor(true);
                 _gameInputSystem.EnableGameplayInput();
             }
             else
@@ -97,7 +97,8 @@ namespace Assets.Game.Scripts.Domain.Systems
 
         public void StartNewGame()
         {
-            Cursor.lockState = CursorLockMode.Locked;
+            HideCursor(true);
+
             Camera.main.enabled = false; //hide camera for start screen menu
 
             GameContext.Current = new GameContext();
@@ -113,6 +114,12 @@ namespace Assets.Game.Scripts.Domain.Systems
 
             _signalBus.Fire<NewGameStarted>();
             _gameStarted = true;
+        }
+
+        private void HideCursor(bool hide)
+        {
+            Cursor.lockState = hide ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !hide;
         }
     }
 }
