@@ -82,6 +82,7 @@ namespace Assets.Game.Scripts.Domain.Systems
             }
         }
 
+        //TODO: move to Bullet class, use strategy patter
         private void OnFireCommon(Ray fireRay)
         {
             Debug.DrawRay(fireRay.origin, fireRay.direction * 100, Color.red, 10);

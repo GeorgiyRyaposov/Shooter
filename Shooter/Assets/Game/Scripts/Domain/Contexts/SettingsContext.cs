@@ -7,6 +7,7 @@ namespace Assets.Game.Scripts.Domain.Contexts
     [System.Serializable]
     public class SettingsContext : Context<Settings>
     {
+        //TODO: replace with UniRX
         public const int MovementSpeedEvent = 0;
         public const int MouseSensitivityEvent = 1;
         public const int JumpHeightEvent = 2;
