@@ -36,10 +36,10 @@ namespace Assets.Game.Scripts.Domain.Installers
             Container.BindInstance(Protagonist);
 
             //install factories
-            Container.BindFactory<ExplosionRangeVisual, ExplosionRangeVisual.Factory>()
-                .FromComponentInNewPrefab(ExplosionRangeVisual)
-                .WithGameObjectName("ExplosionRangeVisual")
-                .UnderTransformGroup("ExplosionRangeVisuals");
+            Container.BindFactory<Vector3, float, ExplosionRangeVisual, ExplosionRangeVisual.Factory>()
+                .FromMonoPoolableMemoryPool(x => x.WithInitialSize(2)
+                                                  .FromComponentInNewPrefab(ExplosionRangeVisual)
+                                                  .UnderTransformGroup("ExplosionRangeVisuals"));
         }
 
         private void InstallSignals()

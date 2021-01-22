@@ -1,4 +1,5 @@
-﻿using Assets.Game.Scripts.Domain.Systems;
+﻿using Assets.Game.Scripts.Domain.Components;
+using Assets.Game.Scripts.Domain.Systems;
 using UnityEngine;
 using Zenject;
 
@@ -12,12 +13,14 @@ namespace Assets.Game.Scripts.Domain.Models
 
         [System.NonSerialized] private LayerMask _enemyMask;
         [System.NonSerialized] private WeaponSystem _weaponSystem;
+        [System.NonSerialized] private ExplosionRangeVisual.Factory _explosionFactory;
 
         [Inject]
-        public void Construct(LayerMask enemyMask, WeaponSystem weaponSystem)
+        public void Construct(LayerMask enemyMask, WeaponSystem weaponSystem, ExplosionRangeVisual.Factory explosionFactory)
         {
             _enemyMask = enemyMask;
             _weaponSystem = weaponSystem;
+            _explosionFactory = explosionFactory;
         }
 
         public override void Fire(Ray fireRay)
@@ -26,6 +29,7 @@ namespace Assets.Game.Scripts.Domain.Models
 
             if (Physics.Raycast(fireRay, out var hit, float.MaxValue, _enemyMask))
             {
+                _explosionFactory.Create(hit.point, 0.1f);
                 _weaponSystem.ApplyDamage(hit.collider, Damage);
             }
         }

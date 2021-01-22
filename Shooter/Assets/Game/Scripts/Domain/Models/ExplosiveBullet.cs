@@ -40,8 +40,7 @@ namespace Assets.Game.Scripts.Domain.Models
             var radius = range * 0.5f;
             var rocketHitPoint = floorHit.point;
 
-            var explosion = _explosionFactory.Create();
-            explosion.Show(rocketHitPoint, range);
+            _explosionFactory.Create(rocketHitPoint, range);
 
             //check if hitted enemy in range
             var hitsCount = Physics.OverlapSphereNonAlloc(rocketHitPoint, radius, _hits);
