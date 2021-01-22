@@ -12,6 +12,11 @@ namespace Assets.Game.Scripts.Domain.Installers
 
         public override void InstallBindings()
         {
+            foreach (var weapon in WeaponsList.Items)
+            {
+                Container.QueueForInject(weapon.Bullet);
+            }
+
             Container.BindInstance(WeaponsList);
             Container.BindInstance(EnemyMask);
         }

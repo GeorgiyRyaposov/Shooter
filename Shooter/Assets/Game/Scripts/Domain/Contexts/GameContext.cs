@@ -31,6 +31,8 @@ namespace Assets.Game.Scripts.Domain.Contexts
             }
         }
 
+        public float DamageModifier = 1f;
+
         #region events
 
         public const int WeaponChangedEvent = 0;
