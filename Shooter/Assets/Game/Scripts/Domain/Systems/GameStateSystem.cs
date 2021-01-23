@@ -103,12 +103,11 @@ namespace Assets.Game.Scripts.Domain.Systems
 
             GameContext.Current = new GameContext();
             _weaponSystem.CreateContexts();
+            _weaponSystem.SelectDefaultWeapon();
 
             //activate player
             _protagonist.gameObject.SetActive(true);
             _protagonist.Attach(GameContext.Current);
-
-            _weaponSystem.SelectDefaultWeapon();
 
             _gameInputSystem.EnableGameplayInput();
 

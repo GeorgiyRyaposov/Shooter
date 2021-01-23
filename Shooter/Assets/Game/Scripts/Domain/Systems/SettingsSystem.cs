@@ -9,9 +9,9 @@ namespace Assets.Game.Scripts.Domain.Systems
 {
     public class SettingsSystem : IInitializable
     {
-        public float MouseSensitivity => _settings.MouseSensitivity;
-        public float MovementSpeed => _settings.MovementSpeed;
-        public float JumpHeight => _settings.JumpHeight;
+        public float MouseSensitivity => _settings.MouseSensitivity.Value;
+        public float MovementSpeed => _settings.MovementSpeed.Value;
+        public float JumpHeight => _settings.JumpHeight.Value;
         public float Gravity => Physics.gravity.y;
 
         private const string SettingsName = "Settings";

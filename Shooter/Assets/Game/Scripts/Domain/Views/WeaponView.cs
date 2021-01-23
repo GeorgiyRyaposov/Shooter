@@ -1,10 +1,8 @@
-﻿using Assets.Game.Scripts.Core.Common;
-using Assets.Game.Scripts.Domain.Contexts;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace Assets.Game.Scripts.Domain.Views
 {
-    public class WeaponView : ContextView
+    public class WeaponView : MonoBehaviour
     {
 #pragma warning disable 0649
         [SerializeField] private Camera _camera;
@@ -36,19 +34,6 @@ namespace Assets.Game.Scripts.Domain.Views
         public Ray GetFireRay()
         {
             return new Ray(_camera.transform.position, _camera.transform.forward);
-        }
-
-        public override void Refresh(int propertyId)
-        {
-            switch (propertyId)
-            {
-                case WeaponContext.FireEvent:
-                    Fire();
-                    break;
-
-                default:
-                    break;
-            }
         }
     }
 }

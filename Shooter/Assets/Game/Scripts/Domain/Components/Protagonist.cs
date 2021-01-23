@@ -5,10 +5,12 @@ using Assets.Game.Scripts.Domain.Views;
 using System.Collections.Generic;
 using UnityEngine;
 using Zenject;
+using UniRx;
+using System;
 
 namespace Assets.Game.Scripts.Domain.Components
 {
-    public class Protagonist : MonoBehaviour, IContextObserver
+    public class Protagonist : MonoBehaviour, IDisposable
     {
 #pragma warning disable 0649
         [SerializeField] private CharacterController _characterController;
@@ -19,8 +21,11 @@ namespace Assets.Game.Scripts.Domain.Components
         private SettingsSystem _settings;
         private WeaponSystem _weaponSystem;
 
-        private List<WeaponView> _weaponViews;
+        private Dictionary<WeaponContext, WeaponView> _weaponViews;
         private WeaponView _currentView;
+
+        private GameContext _context;
+        private readonly CompositeDisposable _disposables = new CompositeDisposable();
 
         private Vector2 _previousMovementInput;
         private Vector2 _lookDelta;
@@ -57,16 +62,15 @@ namespace Assets.Game.Scripts.Domain.Components
 
         private void SetupWeapons()
         {
-            _weaponViews = new List<WeaponView>(GameContext.Current.Weapons.Count);
+            _weaponViews = new Dictionary<WeaponContext, WeaponView>(GameContext.Current.Weapons.Count);
 
             foreach (var weapon in GameContext.Current.Weapons)
             {
                 var view = Instantiate(weapon.Model.ViewPrefab, _armsRoot);
                 
                 view.Hide();
-                view.Attach(weapon);
                 
-                _weaponViews.Add(view);
+                _weaponViews[weapon] = view;
             }
         }
 
@@ -128,6 +132,7 @@ namespace Assets.Game.Scripts.Domain.Components
             {
                 var ray = _currentView.GetFireRay();
                 _weaponSystem.OnFire(ray);
+                _currentView.Fire();
             }
         }
         private void OnSwitchWeapon(bool next)
@@ -135,41 +140,27 @@ namespace Assets.Game.Scripts.Domain.Components
             _weaponSystem.SwitchWeapon(next);
         }
 
-        private void UpdateShownWeapon()
+        private void UpdateShownWeapon(WeaponContext weapon)
         {
             if (_currentView != null)
             {
                 _currentView.Hide();
             }
 
-            _currentView = _weaponViews.Find(x => x.Context == GameContext.Current.SelectedWeapon);
+            _currentView = _weaponViews[weapon];
             _currentView.Show();
         }
 
-        #region Observer
-        public void Refresh(int propertyId)
+        public void Attach(GameContext context) 
         {
-            switch (propertyId)
-            {
-                case GameContext.WeaponChangedEvent:
-                    UpdateShownWeapon();
-                    break;
-
-                default:
-                    break;
-            }
-        }
-
-        private IContext _context;
-        public void Attach(IContext context) 
-        {
-            context.Attach(this);
             _context = context;
+            _context.SelectedWeapon.ObserveEveryValueChanged(x => x.Value)
+                    .Subscribe(x => UpdateShownWeapon(x))
+                    .AddTo(_disposables);
         }
-        public void Detach() 
+        public void Dispose()
         {
-            _context?.Detach(this);
+            _disposables.Clear();
         }
-        #endregion
     }
 }

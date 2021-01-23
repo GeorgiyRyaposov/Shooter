@@ -32,6 +32,7 @@ namespace Assets.Game.Scripts.Domain.Installers
             Container.BindInterfacesAndSelfTo<GameStateSystem>().AsSingle();
             Container.BindInterfacesAndSelfTo<GameInputSystem>().AsSingle();
             Container.BindInterfacesAndSelfTo<WeaponSystem>().AsSingle();
+            Container.BindInterfacesAndSelfTo<ScoreSystem>().AsSingle();
 
             Container.BindInstance(Protagonist);
 

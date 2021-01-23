@@ -1,30 +1,18 @@
 ﻿using Assets.Game.Scripts.Domain.Components;
 using Assets.Game.Scripts.Domain.Contexts;
 using Assets.Game.Scripts.Domain.Models;
-using Assets.Game.Scripts.Domain.Signals;
-using System;
 using System.Linq;
 using UnityEngine;
-using Zenject;
 
 namespace Assets.Game.Scripts.Domain.Systems
 {
-    public class WeaponSystem : IDisposable
+    public class WeaponSystem 
     {
-        private WeaponsList _weaponsList;
-        private SignalBus _signalBus;
+        private readonly WeaponsList _weaponsList;
 
-        public WeaponSystem(WeaponsList weaponsList, SignalBus signalBus)
+        public WeaponSystem(WeaponsList weaponsList)
         {
             _weaponsList = weaponsList;
-
-            _signalBus = signalBus;
-            _signalBus.Subscribe<EnemyDown>(OnEnemyDown);
-        }
-
-        public void Dispose()
-        {
-            _signalBus.Unsubscribe<EnemyDown>(OnEnemyDown);
         }
 
         public void CreateContexts()
@@ -34,12 +22,12 @@ namespace Assets.Game.Scripts.Domain.Systems
 
         public void SelectDefaultWeapon()
         {
-            GameContext.Current.SelectedWeapon = GameContext.Current.Weapons[0];
+            GameContext.Current.SelectedWeapon.Value = GameContext.Current.Weapons[0];
         }
 
         public void SwitchWeapon(bool next)
         {
-            var index = GameContext.Current.Weapons.IndexOf(GameContext.Current.SelectedWeapon);
+            var index = GameContext.Current.Weapons.IndexOf(GameContext.Current.SelectedWeapon.Value);
             index += next ? 1 : -1;
 
             if (index < 0)
@@ -51,31 +39,18 @@ namespace Assets.Game.Scripts.Domain.Systems
                 index = 0;
             }
 
-            GameContext.Current.SelectedWeapon = GameContext.Current.Weapons[index];
+            GameContext.Current.SelectedWeapon.Value = GameContext.Current.Weapons[index];
         }
 
         public bool CanFire()
         {
-            return Time.time - GameContext.Current.SelectedWeapon.LastShotAt > GameContext.Current.SelectedWeapon.Model.FireDelay;
+            return Time.time - GameContext.Current.SelectedWeapon.Value.LastShotAt > GameContext.Current.SelectedWeapon.Value.Model.FireDelay;
         }
 
         public void OnFire(Ray fireRay)
         {
-            GameContext.Current.SelectedWeapon.Fire();
-            GameContext.Current.SelectedWeapon.LastShotAt = Time.time;
-
-            GameContext.Current.SelectedWeapon.Model.Bullet.Fire(fireRay);
-        }
-
-        private void OnEnemyDown(EnemyDown enemyDown)
-        {
-            var weapon = GameContext.Current.Weapons.Find(x => x.Model.Bullet.Type == enemyDown.KilledBy);
-            AddScorePoints(weapon);
-        }
-
-        private void AddScorePoints(WeaponContext weapon)
-        {
-            GameContext.Current.Points += weapon.Model.Bullet.ScorePoints;
+            GameContext.Current.SelectedWeapon.Value.LastShotAt = Time.time;
+            GameContext.Current.SelectedWeapon.Value.Model.Bullet.Fire(fireRay);
         }
 
         public void ApplyDamage(Collider hit, int damage)
@@ -84,7 +59,7 @@ namespace Assets.Game.Scripts.Domain.Systems
             if (enemy != null)
             {
                 var modifiedDamage = Mathf.RoundToInt(damage * GameContext.Current.DamageModifier);
-                enemy.ApplyDamage(modifiedDamage, GameContext.Current.SelectedWeapon.Model.Bullet.Type);
+                enemy.ApplyDamage(modifiedDamage, GameContext.Current.SelectedWeapon.Value.Model.Bullet.Type);
             }
         }
     }

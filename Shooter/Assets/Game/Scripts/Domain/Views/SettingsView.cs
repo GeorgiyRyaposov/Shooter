@@ -1,11 +1,12 @@
-﻿using Assets.Game.Scripts.Core.Common;
-using Assets.Game.Scripts.Domain.Contexts;
+﻿using Assets.Game.Scripts.Domain.Contexts;
+using System;
+using UniRx;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace Assets.Game.Scripts.Domain.Views
 {
-    public class SettingsView : MonoBehaviour, IContextObserver
+    public class SettingsView : MonoBehaviour, IDisposable
     {
         public Button ApplyButton => _applyButton;
         public Button RestoreDefaultsButton => _restoreDefaultsButton;
@@ -20,19 +21,27 @@ namespace Assets.Game.Scripts.Domain.Views
         [SerializeField] private Button _quitButton;
 #pragma warning restore 0649
 
+        private CompositeDisposable _disposables = new CompositeDisposable();
         private SettingsContext _context;
 
-        public void Attach(IContext context)
+        public void Attach(SettingsContext context)
         {
-            Detach();
+            _context = context;
 
-            _context = context as SettingsContext;
+            _movementSpeedSlider.AddListener((value) => _context.MovementSpeed.Value = value);
+            _mouseSensitivitySlider.AddListener((value) => _context.MouseSensitivity.Value = value);
+            _jumpHeightSlider.AddListener((value) => _context.JumpHeight.Value = value);
 
-            _movementSpeedSlider.AddListener((value) => _context.MovementSpeed = value);
-            _mouseSensitivitySlider.AddListener((value) => _context.MouseSensitivity = value);
-            _jumpHeightSlider.AddListener((value) => _context.JumpHeight = value);
-            
-            RefreshSliders();
+            SubscribeSliderToContext(_context.MovementSpeed, _movementSpeedSlider);
+            SubscribeSliderToContext(_context.MouseSensitivity, _mouseSensitivitySlider);
+            SubscribeSliderToContext(_context.JumpHeight, _jumpHeightSlider);
+        }
+
+        private void SubscribeSliderToContext(FloatReactiveProperty property, CustomSliderView view)
+        {
+            property.ObserveEveryValueChanged(x => x.Value)
+                    .Subscribe(x => view.SetValueWithoutNotify(x))
+                    .AddTo(_disposables);
         }
 
         public void Show()
@@ -45,33 +54,9 @@ namespace Assets.Game.Scripts.Domain.Views
             gameObject.SetActive(false);
         }
 
-        public void Refresh(int propertyId)
+        public void Dispose()
         {
-            switch (propertyId)
-            {
-                case SettingsContext.MovementSpeedEvent:
-                    _movementSpeedSlider.SetValueWithoutNotify(_context.MovementSpeed);
-                    break;
-
-                case SettingsContext.MouseSensitivityEvent:
-                    _mouseSensitivitySlider.SetValueWithoutNotify(_context.MouseSensitivity);
-                    break;
-
-                case SettingsContext.JumpHeightEvent:
-                    _jumpHeightSlider.SetValueWithoutNotify(_context.JumpHeight);
-                    break;
-            }
-        }
-        private void RefreshSliders()
-        {
-            Refresh(SettingsContext.MovementSpeedEvent);
-            Refresh(SettingsContext.MouseSensitivityEvent);
-            Refresh(SettingsContext.JumpHeightEvent);
-        }
-
-        public void Detach()
-        {
-            _context?.Detach(this);
+            _disposables.Clear();
         }
     }
 }
